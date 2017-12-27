@@ -1,5 +1,5 @@
 var map = new mapboxgl.Map({
-    container: 'map',
+    container: 'map-container',
     style: 'positron_glstyle.json',
     center: [
         2.4067, 48.7031
@@ -7,6 +7,26 @@ var map = new mapboxgl.Map({
     zoom: 14,
     hash: true
 });
+
+function hidePopup(){
+    popup.style.display = 'none';
+    document.getElementById("map-container").style.gridColumnStart = 1;
+    document.getElementById("map-container").style.gridColumnEnd = 3;
+    document.getElementById("map-container").style.gridRowStart = 1;
+    document.getElementById("map-container").style.gridRowEnd = 3;
+    map.resize();
+}
+hidePopup();
+
+function showPopup(){
+  popup.style.display = 'inline-block';
+  document.getElementById("map-container").style.gridColumnStart = 1;
+  document.getElementById("map-container").style.gridColumnEnd = 2;
+  document.getElementById("map-container").style.gridRowStart = 1;
+  document.getElementById("map-container").style.gridRowEnd = 2;
+  map.resize();
+}
+
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl({
     positionOptions: {
@@ -55,13 +75,19 @@ map.on('load', function () {
         map.getCanvas().style.cursor = '';
     });
 
+    var popup = document.getElementById('popup');
+
+    map.on('click', function(e) {
+        hidePopup();
+    });
+
     map.on('click', 'issues_', function (e) {
-        var popup = new mapboxgl.Popup().setLngLat(e.features[0].geometry.coordinates).setHTML(
-            "<br><a target='blank_' href='http://osmose.openstreetmap.fr/fr/api/0.2/error/" + e.features[0].properties.issue_id + "'>Voir cette erreur</a>"
-        )
-        popup.addTo(map);
+        map.flyTo({
+          center: e.features[0].geometry.coordinates,
+          zoom: 18
+        });
+
         var item_id = e.features[0]['properties']['item'];
-        console.log(e.features[0])
 
         fetch("https://cors.5apps.com/?uri=http://osmose.openstreetmap.fr/fr/api/0.2/error/" + e.features[0].properties.issue_id).then(function (res) {
             if (res.ok) {
@@ -80,7 +106,8 @@ map.on('load', function () {
                             popup_content += "<br><a target='blank_' href='" + osm_url + "'>Voir sur OSM</a>"
                         }
                     }
-                    popup.setHTML(popup_content)
+                    popup.innerHTML = popup_content;
+                    showPopup();
                 });
             } else {
                 console.log("Fetch failed!", res.status);
