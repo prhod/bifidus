@@ -15,7 +15,7 @@ map.addControl(new mapboxgl.GeolocateControl({
     trackUserLocation: true
 }));
 
-osmose_issues_to_display = get_issues_to_display_from_url()
+var osmose_issues_to_display = get_issues_to_display_from_url()
 
 map.on('load', function() {
     map.loadImage('https://raw.githubusercontent.com/osm-fr/osmose-frontend/master/static/images/markers/marker-b-3010.png', function(error, image) {
@@ -38,57 +38,22 @@ map.on('load', function() {
 
     map.on('click', popup_element.remove);
 
-    var all_issues_tags = ['1260_1', '1260_2', '1260_3', '1260_4', '8040', '2140_21402', '2140_21403',
-        '2140_21404', '2140_21405', '2140_21401', '2140_21411', '2140_21412',
-        'line_info'
-    ];
     for (var i = 0; i < osmose_issues_to_display.length; i++) {
         issue = osmose_issues_to_display[i];
-        if (all_issues_tags.includes(issue)) {
+        create_layer(issue);
+        var display_function = window["display_info_"+issue];
+        if (typeof display_function === "function"){
+            map.on('click', "issues_" + issue, display_function);
+        } else {
+            map.on('click', "issues_" + issue, display_generic);
         }
     }
-    if (osmose_issues_to_display === '1260_1' || osmose_issues_to_display === 'all') {
-        generic_osmose("1260_1", "1260", "1", display_info_1260_1);
-    }
-    if (osmose_issues_to_display === '1260_2' || osmose_issues_to_display === 'all') {
-        generic_osmose("1260_2", "1260", "2", display_info_1260_2);
-    }
-    if (osmose_issues_to_display === '1260_3' || osmose_issues_to_display === 'all') {
-        generic_osmose("1260_3", "1260", "3", display_info_1260_3);
-    }
-    if (osmose_issues_to_display === '1260_4' || osmose_issues_to_display === 'all') {
-        generic_osmose("1260_4", "1260", "4", display_info_1260_4);
-    }
-    if (osmose_issues_to_display === '2140_21402' || osmose_issues_to_display === 'all') {
-        generic_osmose("2140_21402", "2140", "21402", display_info_2140_21402);
-    }
-    if (osmose_issues_to_display === '2140_21403' || osmose_issues_to_display === 'all') {
-        generic_osmose("2140_21403", "2140", "21403", display_info_2140_21403);
-    }
-    if (osmose_issues_to_display === '2140_21404' || osmose_issues_to_display === 'all') {
-        generic_osmose("2140_21404", "2140", "21404", display_info_2140_21404);
-    }
-    if (osmose_issues_to_display === '2140_21405' || osmose_issues_to_display === 'all') {
-        generic_osmose("2140_21405", "2140", "21405", display_info_2140_21404);
-    }
 
-
-    //other
-    if (osmose_issues_to_display === '2140_21401' || osmose_issues_to_display === 'all') {
-        generic_osmose('2140_21401', '2140', '21401')
-    }
-    if (osmose_issues_to_display === '2140_21411' || osmose_issues_to_display === 'all') {
-        generic_osmose('2140_21411', '2140', '21411')
-    }
-    if (osmose_issues_to_display === '2140_21412' || osmose_issues_to_display === 'all') {
-        generic_osmose('2140_21412', '2140', '21412')
-    }
-    if (osmose_issues_to_display === '8040' || osmose_issues_to_display === 'all') {
-        generic_osmose('8040', '8040')
-    }
-
-    function generic_osmose(osmose_name, osmose_item, osmose_class, display_function) {
-        var osmose_tiles_url = "https://cors.5apps.com/?uri=http://osmose.openstreetmap.fr/fr/map/issues/{z}/{x}/{y}.mvt?"
+    function create_layer(osmose_name) {
+        var osmose_tiles_url = "https://cors.5apps.com/?uri=http://osmose.openstreetmap.fr/fr/map/issues/{z}/{x}/{y}.mvt?";
+        var osmose_name_array = osmose_name.split("_");
+        var osmose_item = osmose_name_array[0];
+        var osmose_class = (osmose_name_array.length > 1) ? osmose_name_array[1] : false;
         osmose_tiles_url += "item=" + osmose_item
         if (osmose_class) {
             osmose_tiles_url += "&class=" + osmose_class
@@ -109,24 +74,34 @@ map.on('load', function() {
         });
 
         change_cursor_under_the_mouse("issues_" + osmose_name);
-
-        if (display_function) {
-            map.on('click', "issues_" + osmose_name, display_function);
-        } else {
-            map.on('click', "issues_" + osmose_name, display_generic);
-        }
     }
 })
 
 function get_issues_to_display_from_url() {
-    var osmose_issues = ['1260_1', '1260_2', '1260_3', '1260_4', '8040', '2140_21402', '2140_21403',
-        '2140_21404', '2140_21405', '2140_21401', '2140_21411', '2140_21412',
-        'line_info'
-    ]
-    osmose_issues_to_display = get_parameter_from_url("issues")
-    if (!osmose_issues.includes(osmose_issues_to_display)) {
-        var osmose_issues_to_display = "all"
-        console.log("Le numéro Osmose passé dans l'URL n'est pas valide, on affiche tout")
+    var all_osmose_issues = ['1260_1', '1260_2', '1260_3', '1260_4', '8040', '2140_21402', '2140_21403',
+        '2140_21404', '2140_21405', '2140_21401', '2140_21411', '2140_21412'
+    ];
+    var line_issues = ['2140_21402', '2140_21403','2140_21404', '2140_21405'];
+    var osmose_issues_to_display = get_parameter_from_url("issues");
+    if (typeof(osmose_issues_to_display) == "string") {
+        osmose_issues_to_display = [osmose_issues_to_display];
     }
-    return osmose_issues_to_display
+    if (osmose_issues_to_display.includes('all')) {
+        return all_osmose_issues;
+    } else if (osmose_issues_to_display.includes('line_info')) {
+        // adding all the values of "line_issues" alias
+        osmose_issues_to_display = osmose_issues_to_display.concat(line_issues);
+        // removing non existing value, dupplicates and aliases
+        osmose_issues_to_display = osmose_issues_to_display.filter(
+            function(item, pos, self) {
+                return ((self.indexOf(item) == pos) && (all_osmose_issues.includes(item)));
+            }
+        );
+    }
+    if (osmose_issues_to_display.length > 0) {
+        return osmose_issues_to_display;
+    } else {
+        console.log("Le numéro Osmose passé dans l'URL n'est pas valide, on affiche tout")
+        return all_osmose_issues;
+    }
 }
