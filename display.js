@@ -1,4 +1,4 @@
-async function display_generic(e) {
+async function display_default_osmose_infos(e) {
     map.flyTo({
         center: e.features[0].geometry.coordinates,
         zoom: 18
@@ -28,7 +28,7 @@ async function display_generic(e) {
     }
 }
 
-async function display_info_2140_21404(e) {
+async function display_info_2140_21405(e) {
     console.log("osmose 2140 - 21405 - tag ref manquant sur une relation pt")
     map.flyTo({
         center: e.features[0].geometry.coordinates,

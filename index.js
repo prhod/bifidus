@@ -38,70 +38,84 @@ map.on('load', function() {
 
     map.on('click', popup_element.remove);
 
-    for (var i = 0; i < osmose_issues_to_display.length; i++) {
-        issue = osmose_issues_to_display[i];
-        create_layer(issue);
-        var display_function = window["display_info_"+issue];
-        if (typeof display_function === "function"){
-            map.on('click', "issues_" + issue, display_function);
-        } else {
-            map.on('click', "issues_" + issue, display_generic);
-        }
+    // issues_1260_1
+    if ( ['1260_1', 'all'].includes(osmose_issues_to_display)) {
+        create_layer('1260_1');
+        map.on('click', "issues_1260_1", display_info_1260_1);
     }
 
-    function create_layer(osmose_name) {
-        var osmose_tiles_url = "https://cors.5apps.com/?uri=http://osmose.openstreetmap.fr/fr/map/issues/{z}/{x}/{y}.mvt?";
-        var osmose_name_array = osmose_name.split("_");
-        var osmose_item = osmose_name_array[0];
-        var osmose_class = (osmose_name_array.length > 1) ? osmose_name_array[1] : false;
-        osmose_tiles_url += "item=" + osmose_item
-        if (osmose_class) {
-            osmose_tiles_url += "&class=" + osmose_class
-        }
-        map.addLayer({
-            "id": "issues_" + osmose_name,
-            "type": "symbol",
-            "source": {
-                'type': 'vector',
-                "tiles": [osmose_tiles_url],
-                "attribution": "Osmose",
-                "minzoom": 12
-            },
-            "source-layer": "issues",
-            "layout": {
-                "icon-image": "{item}"
-            }
-        });
-
-        change_cursor_under_the_mouse("issues_" + osmose_name);
+    // issues_1260_2
+    if ( ['1260_2', 'all'].includes(osmose_issues_to_display)) {
+        create_layer('1260_2');
+        map.on('click', "issues_1260_2", display_info_1260_2);
     }
+
+    // issues_1260_3
+    if ( ['1260_3', 'all'].includes(osmose_issues_to_display)) {
+        create_layer('1260_3');
+        map.on('click', "issues_1260_3", display_info_1260_3);
+    }
+
+    // issues_1260_4
+    if ( ['1260_4', 'all'].includes(osmose_issues_to_display)) {
+        create_layer('1260_4');
+        map.on('click', "issues_1260_4", display_info_1260_4);
+    }
+
+    // issues : 2140_21402
+    if ( ['2140_21402', 'all', 'line_info'].includes(osmose_issues_to_display)) {
+        create_layer('2140_21402');
+        map.on('click', "issues_2140_21402", display_info_2140_21402);
+    }
+    
+    // issues : 2140_21403
+    if ( ['2140_21403', 'all', 'line_info'].includes(osmose_issues_to_display)) {
+        create_layer('2140_21403');
+        map.on('click', "issues_2140_21403", display_info_2140_21403);
+    }
+
+    // issues : 2140_21404
+    if ( ['2140_21404', 'all', 'line_info'].includes(osmose_issues_to_display)) {
+        create_layer('2140_21404');
+        map.on('click', "issues_2140_21404", display_info_2140_21404);
+    }
+    
+    // issues : 2140_21405
+    if ( ['2140_21405', 'all', 'line_info'].includes(osmose_issues_to_display)) {
+        create_layer('2140_21405');
+        map.on('click', "issues_2140_21405", display_info_2140_21405);
+    }
+    
+    //other
+    if (osmose_issues_to_display === '2140_21401' || osmose_issues_to_display === 'all') {
+        create_layer('2140_21401');
+        map.on('click', "issues_2140_21401", display_default_osmose_infos);
+    }
+    if (osmose_issues_to_display === '2140_21411' || osmose_issues_to_display === 'all') {
+        create_layer('2140_21411');
+        map.on('click', "issues_2140_21411", display_default_osmose_infos);
+    }
+    if (osmose_issues_to_display === '2140_21412' || osmose_issues_to_display === 'all') {
+        create_layer('2140_21412');
+        map.on('click', "issues_2140_21412", display_default_osmose_infos);
+    }
+    if (osmose_issues_to_display === '8040' || osmose_issues_to_display === 'all') {
+        create_layer('8040');
+        map.on('click', "issues_8040", display_default_osmose_infos);
+    }
+
+
 })
 
 function get_issues_to_display_from_url() {
-    var all_osmose_issues = ['1260_1', '1260_2', '1260_3', '1260_4', '8040', '2140_21402', '2140_21403',
-        '2140_21404', '2140_21405', '2140_21401', '2140_21411', '2140_21412'
-    ];
-    var line_issues = ['2140_21402', '2140_21403','2140_21404', '2140_21405'];
-    var osmose_issues_to_display = get_parameter_from_url("issues");
-    if (typeof(osmose_issues_to_display) == "string") {
-        osmose_issues_to_display = [osmose_issues_to_display];
-    }
-    if (osmose_issues_to_display.includes('all')) {
-        return all_osmose_issues;
-    } else if (osmose_issues_to_display.includes('line_info')) {
-        // adding all the values of "line_issues" alias
-        osmose_issues_to_display = osmose_issues_to_display.concat(line_issues);
-        // removing non existing value, dupplicates and aliases
-        osmose_issues_to_display = osmose_issues_to_display.filter(
-            function(item, pos, self) {
-                return ((self.indexOf(item) == pos) && (all_osmose_issues.includes(item)));
-            }
-        );
-    }
-    if (osmose_issues_to_display.length > 0) {
-        return osmose_issues_to_display;
-    } else {
+    var osmose_issues = ['1260_1', '1260_2', '1260_3', '1260_4', '8040', '2140_21402', '2140_21403',
+        '2140_21404', '2140_21405', '2140_21401', '2140_21411', '2140_21412',
+        'line_info'
+    ]
+    osmose_issues_to_display = get_parameter_from_url("issues")
+    if (!osmose_issues.includes(osmose_issues_to_display)) {
+        var osmose_issues_to_display = "all"
         console.log("Le numéro Osmose passé dans l'URL n'est pas valide, on affiche tout")
-        return all_osmose_issues;
     }
+    return osmose_issues_to_display
 }
